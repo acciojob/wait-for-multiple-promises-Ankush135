@@ -1,50 +1,47 @@
-//your JS code here. If required.
-const output = document.getElementById("output")
+const tbody = document.getElementById("output");
 
-function makePromise(name) {
-  const delay = Math.random() * 2 + 1;
-  
-  return new Promise((resolve) => {
+
+tbody.innerHTML = `
+  <tr id="loading">
+    <td colspan="2">Loading...</td>
+  </tr>
+`;
+
+function createPromise(name) {
+  const delay = Math.random() * 2 + 1; 
+  return new Promise(resolve => {
     setTimeout(() => {
       resolve({ name, time: delay });
     }, delay * 1000);
   });
 }
 
-const p1 = makePromise("Promise 1");
-const p2 = makePromise("Promise 2");
-const p3 = makePromise("Promise 3");
+const p1 = createPromise("Promise 1");
+const p2 = createPromise("Promise 2");
+const p3 = createPromise("Promise 3");
 
-// Wait for all
-Promise.all([p1, p2, p3]).then((results) => {
-  
+const startTime = performance.now();
 
-  const loadingRow = document.getElementById("loading");
-  if (loadingRow) loadingRow.remove();
+Promise.all([p1, p2, p3])
+  .then(results => {
+   
+    tbody.innerHTML = "";
 
+    results.forEach((result, index) => {
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>Promise ${index + 1}</td>
+        <td>${result.time.toFixed(3)}</td>
+      `;
+      tbody.appendChild(row);
+    });
 
-  results.forEach((p) => {
-    const tr = document.createElement("tr");
+    const totalTime = (performance.now() - startTime) / 1000;
 
-    const td1 = document.createElement("td");
-    td1.innerText = p.name;
-
-    const td2 = document.createElement("td");
-    td2.innerText = p.time.toFixed(3);
-
-    tr.appendChild(td1);
-    tr.appendChild(td2);
-
-    output.appendChild(tr);
-  });
-
-
-  const total = Math.max(...results.map(r => r.time));
-
-  const totalRow = document.createElement("tr");
-  totalRow.innerHTML = `
-    <td>Total</td>
-    <td>${total.toFixed(3)}</td>
-  `;
-  output.appendChild(totalRow);
-});
+    const totalRow = document.createElement("tr");
+    totalRow.innerHTML = `
+      <td>Total</td>
+      <td>${totalTime.toFixed(3)}</td>
+    `;
+    tbody.appendChild(totalRow);
+  })
